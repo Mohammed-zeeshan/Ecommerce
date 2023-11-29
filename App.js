@@ -3,12 +3,17 @@ import Store from "./Components/Store";
 import Homepage from "./Components/Homepage";
 import ContactUs from "./Components/ContactUs";
 import ProductPage from "./Components/ProductPage";
-import { Redirect, Route } from "react-router-dom/cjs/react-router-dom.min";
+import LoginPage from "./Components/LoginPage"
+import { Redirect, Route, Switch } from "react-router-dom/cjs/react-router-dom.min";
+import { useContext } from "react";
+import AuthContext from "./Components/Store/auth-context";
 
 
 function App() {
+  const authCtx = useContext(AuthContext);
+
   return (
-    <div>
+    <Switch>
       <Route path='/' exact>
         <Redirect to='/Store' />
       </Route>
@@ -25,9 +30,13 @@ function App() {
         <ContactUs />
       </Route>
       <Route path="/ProductPage/:productId" >
-        <ProductPage />
+        {authCtx.isLoggedIn && <ProductPage />}
+        {!authCtx.isLoggedIn && <Redirect to='/login' />}
       </Route>
-    </div> 
+      <Route path='/login'>
+        <LoginPage />
+      </Route>
+    </Switch> 
   );
 }
 
