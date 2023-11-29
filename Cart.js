@@ -2,8 +2,12 @@ import React, { useContext } from 'react'
 import Modal from 'react-bootstrap/Modal';
 import CloseButton from 'react-bootstrap/CloseButton';
 import CartContext from './Store/cart-context';
+import axios from 'axios';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 const Cart = (props) => {
+    const [additems, setItems] = useState([])
     const cartctx = useContext(CartContext)
     let total = 0;
     const purchaseHander = (event) => {
@@ -13,6 +17,14 @@ const Cart = (props) => {
     cartctx.items.forEach((item) => {
         total = total + item.price;
     })
+    const load = async() => {
+        const response = await axios.get('https://crudcrud.com/api/bda8c82778f549d0a9bb27e0433232fc/itemslist')
+        setItems(response.data);
+    }
+
+    useEffect(() => {
+        load();
+    }, []);
   return (
     <Modal className='modal' show={props.button} onHide={props.func}>
         <Modal.Header>
@@ -25,8 +37,16 @@ const Cart = (props) => {
             <label>PRICE</label>
             <label>QUANTITY</label>
         </div>
-        {cartctx.items.map(item => (
-        <div><img src={item.image} className='img-thumbnail w-25' alt='Product' rounded /><div className='d-flex justify-content-around'><label>{item.title}</label><label>{item.price}</label><label>{item.quantity}</label></div><button className="btn btn-primary">Remove</button> </div>
+        {additems.map(item => (
+        <div className='pb-2' key={item.id}>
+            <img src={item.image} className='img-thumbnail w-25' alt='Product' rounded />
+            <div className='d-flex justify-content-around'>
+                <label>{item.title}</label>
+                <label>{item.price}</label>
+                <input style={{width: 30}} type='text' defaultValue={1}/>
+                <button className="btn btn-danger">Remove</button>
+            </div>
+        </div>
     ))}
     <div className='d-flex justify-content-around'>
         <h3>Total: ${total}</h3>
