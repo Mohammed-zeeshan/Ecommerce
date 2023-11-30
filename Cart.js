@@ -1,59 +1,42 @@
-import React, { useContext } from 'react'
-import Modal from 'react-bootstrap/Modal';
-import CloseButton from 'react-bootstrap/CloseButton';
-import CartContext from './Store/cart-context';
-import axios from 'axios';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react'
+import Modal from './Modal'
+import classes from './Cart.module.css'
+import axios from 'axios'
 
 const Cart = (props) => {
-    const [additems, setItems] = useState([])
-    const cartctx = useContext(CartContext)
-    let total = 0;
-    const purchaseHander = (event) => {
-        event.preventDefault();
-        alert('Thanks for the purchase')
+    const [cartItem, setCartItem] = useState([]);
+    const getCart = async() => {
+        const response = await axios.get('https://crudcrud.com/api/c91bb2a3851844b9af0d7090a3890a75/Cart')
+        setCartItem(response.data)
     }
-    cartctx.items.forEach((item) => {
-        total = total + item.price;
-    })
-    const load = async() => {
-        const response = await axios.get('https://crudcrud.com/api/bda8c82778f549d0a9bb27e0433232fc/itemslist')
-        setItems(response.data);
-    }
-
     useEffect(() => {
-        load();
+        getCart();
     }, []);
+    let total = 0;
+    const cartItems = (
+        <ul className={classes['cart-item']}>
+            {cartItem.map((item) => (
+                <div key={item.id}>
+                    <li>Name: {item.candyName} Description: {item.description} Price: {item.price} </li>
+                </div>
+            ))}
+        </ul>
+    )
+    cartItem.forEach(item => {
+        total = total + Number(item.price);
+    })
   return (
-    <Modal className='modal' show={props.button} onHide={props.func}>
-        <Modal.Header>
-        <h1>CART</h1>
-        <CloseButton onClick={props.func}/>
-        </Modal.Header>
-        <Modal.Body>
-        <div className='d-flex justify-content-around'>
-            <label>ITEM</label>
-            <label>PRICE</label>
-            <label>QUANTITY</label>
+    <Modal onHideCart={props.onHideCart}>
+        {cartItems}
+        <div className={classes.total}>
+            <span>Total Amount</span>
+            <span>{total}</span>
         </div>
-        {additems.map(item => (
-        <div className='pb-2' key={item.id}>
-            <img src={item.image} className='img-thumbnail w-25' alt='Product' rounded />
-            <div className='d-flex justify-content-around'>
-                <label>{item.title}</label>
-                <label>{item.price}</label>
-                <input style={{width: 30}} type='text' defaultValue={1}/>
-                <button className="btn btn-danger">Remove</button>
-            </div>
+        <div className={classes.actions}>
+            <button className={classes['button--alt']} onClick={props.onHideCart}>Close</button>
+            <button className={classes.button}>Order</button>
         </div>
-    ))}
-    <div className='d-flex justify-content-around'>
-        <h3>Total: ${total}</h3>
-        <button className='btn btn-primary' onClick={purchaseHander}>PURCHASE</button>
-    </div>
-    </Modal.Body>
-</Modal>
+    </Modal>
   )
 }
 

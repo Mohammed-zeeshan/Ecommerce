@@ -1,42 +1,49 @@
-import About from "./Components/About";
-import Store from "./Components/Store";
-import Homepage from "./Components/Homepage";
-import ContactUs from "./Components/ContactUs";
-import ProductPage from "./Components/ProductPage";
-import LoginPage from "./Components/LoginPage"
-import { Redirect, Route, Switch } from "react-router-dom/cjs/react-router-dom.min";
-import { useContext } from "react";
-import AuthContext from "./Components/Store/auth-context";
-
+import React, { useEffect, useState } from "react";
+import CandyForm from "./Components/CandyForm";
+import Lists from "./Components/Lists";
+import Cart from "./Components/Cart";
+import CartProvider from "./Components/CartProvider";
+import axios from "axios";
 
 function App() {
-  const authCtx = useContext(AuthContext);
+  const [item, setItem] = useState([])
+  const [cartIsShown, setCartIsShown] = useState(false);
+  const addItemHandler = async(names) => {
+    await axios.post('https://crudcrud.com/api/c91bb2a3851844b9af0d7090a3890a75/Product',names)
+    getItems()
+  }
+  const getItems = async() => {
+    const response = await axios.get('https://crudcrud.com/api/c91bb2a3851844b9af0d7090a3890a75/Product')
+    setItem(response.data)
+  }
+  useEffect(() => {
+    getItems()
+  })
+  const showCartHandler = () => {
+    setCartIsShown(true);
+  }
 
+  const hideCartHandler = () => {
+    setCartIsShown(false)
+  }
+  let quantity = 0;
+  item.forEach(item => {
+      quantity = quantity + Number(item.quantity);
+  })
+  let context = (
+    <p></p>
+  )
+  if (item.length > 0){
+    context = (
+      <Lists items={item} />
+    )
+  }
   return (
-    <Switch>
-      <Route path='/' exact>
-        <Redirect to='/Store' />
-      </Route>
-      <Route path="/Store" >
-        <Store />
-      </Route>
-      <Route path="/About" >
-        <About />
-      </Route>
-      <Route path="/Homepage" >
-        <Homepage />
-      </Route>
-      <Route path="/ContactUs" >
-        <ContactUs />
-      </Route>
-      <Route path="/ProductPage/:productId" >
-        {authCtx.isLoggedIn && <ProductPage />}
-        {!authCtx.isLoggedIn && <Redirect to='/login' />}
-      </Route>
-      <Route path='/login'>
-        <LoginPage />
-      </Route>
-    </Switch> 
+    <CartProvider>
+      {cartIsShown && <Cart onHideCart={hideCartHandler} />}
+      <CandyForm details={addItemHandler}  sum={quantity} onShowCart={showCartHandler} />
+      {context}
+    </CartProvider>
   );
 }
 
